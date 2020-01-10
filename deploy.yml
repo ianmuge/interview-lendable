@@ -25,13 +25,8 @@
         name: "{{ansible_user_id}}"
         groups: docker
         append: yes
-    
-
-  # tasks:
-  #   - name: get hosts
-  #     debug: var=ansible_play_hosts
-  #   - name: get user
-  #     debug: var=ansible_user_id
+    - name: clean up stopped containers and images
+      shell: docker container prune -f && docker image prune -af
   roles:
     - name: Deploy 
   post_tasks:

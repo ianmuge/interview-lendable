@@ -1,0 +1,21 @@
+---
+- name: update git submodules
+  shell: git submodule update --recursive
+  args:
+    chdir: "{{working_dir}}"
+- name: copy modified Dockerfile
+  copy:
+    src: Dockerfile
+    dest: "{{working_dir}}/Dockerfile"
+    owner: "{{ansible_user_id}}"
+    group: "{{ansible_user_id}}"
+    mode: u=rw,g=r,o=r
+- name: docker build
+  shell: docker build -t simple-website-img:latest .
+  args:
+    chdir: "{{working_dir}}"
+- name: docker stop previous containers
+  ignore_errors: true
+  shell: "docker container stop simple-website-cont"
+- name: docker run
+  shell: "docker run -dit --rm -p 80:80 --name simple-website-cont -v {{working_dir}}/www:/www simple-website-img:latest"

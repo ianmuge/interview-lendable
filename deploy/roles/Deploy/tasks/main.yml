@@ -1,0 +1,13 @@
+---
+- name: update git submodules
+  shell: git submodule update --recursive
+  args:
+    chdir: "{{working_dir}}"
+- name: docker build
+  shell: docker build -t simple-website-img:latest .
+  args:
+    chdir: "{{working_dir}}"
+- name: docker run
+  shell: "docker run simple-website-img:latest -dit -v {{working_dir}}/www:/www -p 80:80"
+  args:
+    chdir: "{{working_dir}}"

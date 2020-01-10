@@ -1,0 +1,49 @@
+---
+- name: deployment scripts
+  hosts: targets
+  user: ec2-user
+  gather_facts: true
+  vars:
+    working_dir: /home/ec2-user/tech-test  
+  pre_tasks:
+    - name: stop httpd
+      ignore_errors: true
+      become: true
+      service:
+        name: httpd
+        state: stopped
+        enabled: no
+    - name: start docker
+      become: true
+      service:
+        name: docker
+        state: started
+        enabled: yes
+    - name: "adding existing user {{ansible_user_id}} to group docker"
+      become: true
+      user:
+        name: "{{ansible_user_id}}"
+        groups: docker
+        append: yes
+    
+
+  # tasks:
+  #   - name: get hosts
+  #     debug: var=ansible_play_hosts
+  #   - name: get user
+  #     debug: var=ansible_user_id
+  roles:
+    - name: Deploy 
+  post_tasks:
+    - name: check that service is responding locally
+      uri:
+        url: "http://localhost"
+        return_content: yes
+        status_code: 200,302
+    - name: check that service is responding remotely
+      uri:
+        url: "http://{{item}}"
+        return_content: yes
+        status_code: 200,302
+      delegate_to: localhost
+      loop: "{{ansible_play_hosts}}"
